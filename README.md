@@ -1,4 +1,6 @@
-# Agent Team Harness（智能体团队流水线）
+![DiegoC-Harness](overview.png)
+
+# DiegoC-Harness
 
 > **纯提示词驱动的多 Agent 协作开发流水线**，Claude Code 插件。
 > 8 个 Agent 角色，7 个步骤，4 道质量关卡。**不挑技术栈**。
