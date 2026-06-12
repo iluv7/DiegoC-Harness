@@ -1,0 +1,10 @@
+# Harness output directory (generated per feature)
+docs/harness/
+
+# Claude Code
+.claude/thinking/
+.claude/worktrees/
+
+# OS
+.DS_Store
+Thumbs.db
