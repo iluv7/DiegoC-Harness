@@ -10,7 +10,9 @@
 
 - **插件目录**（全局）:`~/.claude/plugins/local/DiegoC-Harness/`
 - **Agent 角色定义**: `~/.claude/plugins/local/DiegoC-Harness/agents/<角色名>.md`
-- **模板/关卡/阶段**: `~/.claude/plugins/local/DiegoC-Harness/harness/`
+- **模板**: `~/.claude/plugins/local/DiegoC-Harness/harness/templates/`
+- **关卡清单**: `~/.claude/plugins/local/DiegoC-Harness/harness/gates.md`
+- **阶段指令**: `~/.claude/plugins/local/DiegoC-Harness/harness/phases/`
 - **项目配置**（每个项目）: `./harness/config.md`
 - **功能产出**: `./docs/harness/{功能名}/`
 
