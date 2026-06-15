@@ -48,24 +48,24 @@ S=3人 M=6人 L=8人。
 
 ### 阶段 1：需求分析
 Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）→ 写 spec.md。
-关卡 #1：Lead 验证需求完整、API 契约齐全、类型精确。最多 2 次返工。
+关卡 #1：Spawn Gatekeeper（prompt = gatekeeper.md + spec.md + gates.md Gate #1 清单）→ 写 reviews/gate-1-report.md。Lead 审阅 Gate Report 并裁决。最多 2 次返工。
 
 ### 阶段 1.5：技术方案（并行 spawn 两个）
 - Agent A（api-implementer.md）→ tech-design/api.md
 - Agent B（biz-implementer.md）→ tech-design/biz.md
-关卡 #1.5：Lead 验证接口一致、无文件冲突 → 写 contracts/api.md。最多 2 次返工。
+关卡 #1.5：Spawn Gatekeeper（prompt = gatekeeper.md + tech-design/api.md + tech-design/biz.md + spec.md + gates.md Gate #1.5 清单）→ 写 reviews/gate-1.5-report.md。Lead 审阅 Gate Report，交叉检查一致性，写 contracts/api.md。最多 2 次返工。
 
 ### 阶段 2：编码（并行 spawn 三个）
 - API Impl → 写代码到 api_layer_pattern
 - Biz Impl → 写代码到 biz/dao_layer_pattern
 - QA Designer → 写 test-matrix.md（只设计）
-关卡 #2：Spawn CI Runner 跑编译+lint。0 错误。最多 2 次返工。
+关卡 #2：Spawn CI Runner 跑编译+lint。完成后 Spawn Gatekeeper（prompt = gatekeeper.md + ci.md + gates.md Gate #2 清单）→ 写 reviews/gate-2-report.md，验证 CI 报告完整性和质量。Lead 审阅并裁决。最多 2 次返工。
 
 ### 阶段 3：验收
 - 3.1 Code Reviewer → reviews/code.md
 - 3.2 QA Runner → 写测试+跑测试 → reviews/qa.md
 - 3.3 Code Reviewer（测试模式）→ reviews/test-code-review.md
-关卡 #3：0 严重问题 + 全绿 + 覆盖率达标。最多 2 轮返工。
+关卡 #3：Spawn Gatekeeper（prompt = gatekeeper.md + reviews/code.md + reviews/qa.md + reviews/test-code-review.md + gates.md Gate #3 清单）→ 写 reviews/gate-3-report.md。Lead 审阅并裁决。最多 2 轮返工。
 
 ### 第 7 步：交付
 

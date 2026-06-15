@@ -1,12 +1,14 @@
 # 质量关卡
 
-每道关卡是强制的检查点。Lead 评估关卡并决定：通过（继续）或失败（返工）。每道关卡最多 2 次返工。2 次后仍失败则升级给人类用户。
+每道关卡是强制的检查点。Lead spawn **Gatekeeper**（独立 Agent，`agents/gatekeeper.md`）执行对抗性检查，产出 Gate Report。Lead 审阅报告并决定：通过（继续）或失败（返工）。每道关卡最多 2 次返工。2 次后仍失败则升级给人类用户。
+
+Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益冲突（Lead 倾向于"放过"以推进进度）。Gatekeeper 没有执行责任，唯一使命是找问题，提供了 Lead 做不到的对抗性视角。
 
 ---
 
 ## 关卡 #1：需求质量
 
-**位置**：阶段 1（需求分析）之后 | **评估者**：Lead
+**位置**：阶段 1（需求分析）之后 | **评估者**：Gatekeeper（执行检查）+ Lead（裁决）
 
 ### 检查清单
 
@@ -29,7 +31,7 @@
 
 ## 关卡 #1.5：技术方案一致性
 
-**位置**：阶段 1.5（技术方案）之后 | **评估者**：Lead
+**位置**：阶段 1.5（技术方案）之后 | **评估者**：Gatekeeper（执行检查）+ Lead（裁决）
 
 ### 检查清单
 
@@ -72,7 +74,7 @@
 
 ## 关卡 #3：最终质量
 
-**位置**：阶段 3（验收）之后 | **评估者**：Lead
+**位置**：阶段 3（验收）之后 | **评估者**：Gatekeeper（执行检查）+ Lead（裁决）
 
 ### 检查清单
 
@@ -96,14 +98,16 @@
 
 ## 关卡总览
 
-| 关卡 | 时机 | 检查内容 | 软/硬 |
-|------|------|---------|-------|
-| #1 | 阶段 1 后 | 需求质量 | 软（Lead 判断） |
-| #1.5 | 阶段 1.5 后 | 方案一致性 | 软（Lead 判断） |
-| #2 | 阶段 2 后 | 编译 + lint | 硬（CI Runner 执行，可选 hook 强制拦截） |
-| #3 | 阶段 3 后 | 审查 + 测试 | 软（Lead 判断） |
+| 关卡 | 时机 | 检查内容 | 执行者 | 裁决者 |
+|------|------|---------|--------|--------|
+| #1 | 阶段 1 后 | 需求质量 | Gatekeeper | Lead |
+| #1.5 | 阶段 1.5 后 | 方案一致性 | Gatekeeper | Lead |
+| #2 | 阶段 2 后 | 编译 + lint | CI Runner + Gatekeeper | Lead |
+| #3 | 阶段 3 后 | 审查 + 测试 | Gatekeeper | Lead |
 
-软关卡靠 Lead 判断和提示词约束执行。所有关卡的**执行**可通过 pre-spawn hook 硬化——不通过 Gate 就无法 spawn 下一阶段的 Agent（见 `harness/hooks/pre-spawn-gate-check.sh`）。
+每个 Gate 的执行流程：Lead spawn Gatekeeper → Gatekeeper 出 Gate Report → Lead 审阅并裁决（通过/返工）。
+
+Gatekeeper 解决的是**质量问题**（检查是否认真），Hook（`pre-spawn-gate-check.sh`）解决的是**合规问题**（Gate 是否被跳过/伪造）。两者互补，独立工作。
 
 ### Hook 硬化
 
@@ -118,9 +122,11 @@
 }
 ```
 
+Hook 做两层验证，缺一不可：
+1. PROGRESS.md 中 Gate 行必须 ✅
+2. 对应 `reviews/gate-{N}-report.md` 文件必须存在（物证）
+
 | Hook | 触发时机 | 效果 |
 |------|---------|------|
-| `pre-spawn-gate-check.sh` | Agent spawn 前 | 解析 PROGRESS.md，如有待办 Gate 未 ✅，则 `exit 1` 阻断 spawn |
+| `pre-spawn-gate-check.sh` | Agent spawn 前 | 两层验证 Gate 是否真正通过，不满足则 `exit 1` 阻断 spawn |
 | `pre-commit-ci.sh` | `git commit` 前 | Gate #2 编译/lint 硬拦截（`git commit` 被阻止） |
-
-注意：Hook 确保 Gate **被走过**（合规），但不确保 Gate 检查的**质量**（是否认真检查）。后者需要独立的 Gatekeeper 角色（见 `agents/gatekeeper.md`）。
