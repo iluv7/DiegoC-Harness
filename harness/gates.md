@@ -103,4 +103,24 @@
 | #2 | 阶段 2 后 | 编译 + lint | 硬（CI Runner 执行，可选 hook 强制拦截） |
 | #3 | 阶段 3 后 | 审查 + 测试 | 软（Lead 判断） |
 
-软关卡靠 Lead 判断和提示词约束执行。关卡 #2 是唯一可通过 pre-commit hook 硬化的（见 `harness/hooks/`）。
+软关卡靠 Lead 判断和提示词约束执行。所有关卡的**执行**可通过 pre-spawn hook 硬化——不通过 Gate 就无法 spawn 下一阶段的 Agent（见 `harness/hooks/pre-spawn-gate-check.sh`）。
+
+### Hook 硬化
+
+配置 `.claude/settings.json`：
+
+```json
+"hooks": {
+  "PreToolUse": [{
+    "matcher": "Agent",
+    "command": "bash harness/hooks/pre-spawn-gate-check.sh"
+  }]
+}
+```
+
+| Hook | 触发时机 | 效果 |
+|------|---------|------|
+| `pre-spawn-gate-check.sh` | Agent spawn 前 | 解析 PROGRESS.md，如有待办 Gate 未 ✅，则 `exit 1` 阻断 spawn |
+| `pre-commit-ci.sh` | `git commit` 前 | Gate #2 编译/lint 硬拦截（`git commit` 被阻止） |
+
+注意：Hook 确保 Gate **被走过**（合规），但不确保 Gate 检查的**质量**（是否认真检查）。后者需要独立的 Gatekeeper 角色（见 `agents/gatekeeper.md`）。
