@@ -3,15 +3,16 @@
 # DiegoC-Harness
 
 > **纯提示词驱动的多 Agent 协作开发流水线**，Claude Code 插件。
-> 8 个 Agent 角色，7 个步骤，4 道质量关卡。**不挑技术栈**。
+> 9 个 Agent 角色，7 个步骤，4 道质量关卡。**不挑技术栈**。
 
 ## ✨ 亮点
 
 | 亮点 | 说明 |
 |------|------|
 | 🧠 **100% 提示词驱动** | 没有一行脚本逻辑——所有 Agent 行为、流水线编排、质量关卡全部由提示词定义。改行为就是改 Markdown，不需要写代码。 |
-| 🤖 **8 个专职 Agent** | Lead、Planner、API Implementer、Biz Implementer、QA Designer、CI Runner、Code Reviewer、QA Runner——各司其职，边界清晰。Agent 之间不直接对话，通过 Lead + qa-log.md 协调。 |
-| 🛡️ **4 道质量关卡** | 需求质量 → 方案一致性 → 编译+Lint → 审查+测试。每关最多 2 次返工，2 次后自动升级给人类。关卡 #2（编译+Lint）可硬化为 pre-commit hook。 |
+| 🤖 **9 个专职 Agent** | Lead、Gatekeeper、Planner、API Implementer、Biz Implementer、QA Designer、CI Runner、Code Reviewer、QA Runner——各司其职，边界清晰。Agent 之间不直接对话，通过 Lead + qa-log.md 协调。 |
+| 🛡️ **4 道质量关卡 + Gatekeeper 对抗性检查** | 需求质量 → 方案一致性 → 编译+Lint → 审查+测试。每关 spawn 独立的 Gatekeeper Agent 做对抗性检查（不参与产出，唯一使命是找问题），产出门禁报告（Gate Report）。Lead 审阅报告并执行裁决。每关最多 2 次返工，2 次后升级人类。 |
+| 🔒 **Hook 硬拦截** | `PreToolUse` hook 在每次 spawn Agent 前强制检查：① PROGRESS.md 中 Gate 行是否 ✅ ② 对应的 Gate Report 文件是否存在（物证）。两者缺一不可，Gate 被跳过或伪造则物理上无法 spawn 下一个 Agent。 |
 | 🌐 **不挑技术栈** | Agent 定义和流水线中不硬编码任何语言或工具。Go/Python/Node.js/Java/Rust/... 所有差异集中在 `harness/config.md`（30 行配置）。 |
 | 🔄 **中断恢复** | 会话断了？重敲 `/harness-dev`，Lead 从 `PROGRESS.md` 中断点自动恢复，已完成的步骤不会重新执行。 |
 | 📦 **项目零污染** | 命令、Agent 定义、模板、关卡清单全在 `~/.claude/` 下。你的项目只多 `harness/config.md` + `docs/harness/` 产出目录。 |
@@ -77,7 +78,7 @@ Lead 按 7 步 4 关卡自动拉起子 Agent：需求分析 → 技术方案 →
 
 下面以 **"开发一个 ABTest SDK"** 为例，展示一次完整的 `/harness-init` + `/harness-dev` 跑通全过程。
 
-> 项目技术栈：Go + Gin（DAO 层用 memory 实现，不依赖外部 DB）。全程无需人类插手，Lead 自动协调 8 个 Agent 完成交付，总耗时 14:58 → 15:22 共 24 分钟。
+> 项目技术栈：Go + Gin（DAO 层用 memory 实现，不依赖外部 DB）。全程无需人类插手，Lead 自动协调 9 个 Agent 完成交付，总耗时 14:58 → 15:22 共 24 分钟。
 
 ### 第 0 步：项目初始化（一次性）
 
@@ -129,7 +130,7 @@ Planner 在 `qa-log.md` 里抛出 6 个待解决问题，Lead 基于跨领域观
 
 ![阶段 1：Planner 需求分析 + qa-log Q&A](screenshots/3.png)
 
-**关卡 #1**：Lead 验证需求完整性——覆盖是否全面、验收标准是否可衡量、API 契约类型是否精确、有无未回答的问题。**6/6 全部通过。**
+**关卡 #1**：Lead spawn Gatekeeper。Gatekeeper 对抗性检查需求质量——覆盖是否全面、验收标准是否可衡量、API 契约类型是否精确、有无未回答的问题。产出门禁报告 `reviews/gate-1-report.md`。Lead 审阅结论后裁决。**6/6 全部通过。**
 
 ![关卡 #1：需求质量验证通过](screenshots/4.png)
 
@@ -144,7 +145,7 @@ Lead **并行 spawn** 两个 Agent：
 
 ![阶段 1.5：API + Biz 并行设计方案](screenshots/5.png)
 
-**关卡 #1.5**：Lead 验证两边的接口一致性——API 调用的方法 Biz 是否定义了、参数/返回类型是否对齐、有无文件冲突、路由 & Service 是否全覆盖。**8/8 接口签名精确匹配，零文件冲突，8 个 HTTP 端点 + 8 个业务操作全覆盖。直接通过。**
+**关卡 #1.5**：Lead spawn Gatekeeper 交叉对比 API 和 Biz 方案——接口签名是否对齐、有无文件冲突、路由 & Service 是否全覆盖。产出门禁报告 `reviews/gate-1.5-report.md`。**8/8 接口签名精确匹配，零文件冲突，8 个 HTTP 端点 + 8 个业务操作全覆盖。直接通过。**
 
 ![关卡 #1.5：接口一致性验证通过](screenshots/6.png)
 
@@ -164,7 +165,7 @@ Lead **并行 spawn** 三个 Agent：
 
 ![阶段 2：3 Agent 并行编码](screenshots/8.png)
 
-**关卡 #2**：Lead spawn CI Runner 跑编译 + lint。
+**关卡 #2**：Lead spawn CI Runner 跑编译 + lint，完成后 spawn Gatekeeper 验证 CI 报告完整性和质量，产出门禁报告 `reviews/gate-2-report.md`。
 
 ![关卡 #2：CI Runner 编译 + lint 全通过](screenshots/9.png)
 
@@ -186,7 +187,7 @@ Lead **并行 spawn** 三个 Agent：
 
 ![阶段 3：3.1 + 3.2 + 修复回路](screenshots/10.png)
 
-**关卡 #3**：Lead 做最终验收——对 3 个"严重"问题做实质评估（SEV-01 空 experimentID 已报非法值校验、SEV-02 已有端到端覆盖、SEV-03 修复后已无问题），**0 个真正严重问题，72/72 测试全绿**。
+**关卡 #3**：Lead spawn Gatekeeper 做最终验收——交叉审查代码报告、QA 报告、测试审查报告，逐项检查严重问题清零、测试全绿、覆盖率达标、qa-log 干净、需求可追溯。产出门禁报告 `reviews/gate-3-report.md`。**0 个严重问题，72/72 测试全绿，通过。**
 
 ![关卡 #3：最终质量验收通过](screenshots/11.png)
 
@@ -221,6 +222,10 @@ Lead **并行 spawn** 三个 Agent：
     │   ├── api.md                         ← API 技术方案
     │   └── biz.md                         ← 业务层技术方案
     └── reviews/
+        ├── gate-1-report.md               ← Gatekeeper 门禁报告（需求质量）
+        ├── gate-1.5-report.md             ← Gatekeeper 门禁报告（方案一致性）
+        ├── gate-2-report.md               ← Gatekeeper 门禁报告（编译+Lint）
+        ├── gate-3-report.md               ← Gatekeeper 门禁报告（最终质量）
         ├── code.md                        ← Code Reviewer 报告
         ├── qa.md                          ← QA Runner 测试报告
         └── test-code-review.md            ← 测试代码审查报告
@@ -244,11 +249,12 @@ Lead **并行 spawn** 三个 Agent：
 
 ---
 
-## 8 个 Agent 角色
+## 9 个 Agent 角色
 
 | 角色 | 做什么 | 写代码？ |
 |------|--------|:---:|
-| **Lead** | 总协调，不写代码，验关卡 | ✗ |
+| **Lead** | 总协调，不写代码，审阅 Gate Report 并裁决 | ✗ |
+| **Gatekeeper** | 对抗性检查 Gate，产出门禁报告（Gate Report） | ✗ |
 | **Planner** | 读 PRD → 结构化需求 + API 契约 | ✗ |
 | **API Implementer** | API/handler/路由 + 请求校验 | ✓ |
 | **Biz Implementer** | 业务逻辑 + 数据访问 | ✓ |
@@ -265,20 +271,33 @@ Lead **并行 spawn** 三个 Agent：
 
 ---
 
-## 可选：CI Hook
+## 可选：Hook 硬拦截
 
-项目 `.claude/settings.json`：
+项目 `.claude/settings.json` 配置两个 Hook：
 
 ```json
 {
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Bash(git commit*)",
-      "command": "bash ~/.claude/plugins/local/DiegoC-Harness/harness/hooks/pre-commit-ci.sh"
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "command": "bash harness/hooks/pre-spawn-gate-check.sh",
+        "description": "Agent spawn 前验证 Gate 已通过（✅ + Gate Report 物证），未通过则阻断"
+      },
+      {
+        "matcher": "Bash(git commit*)",
+        "command": "bash harness/hooks/pre-commit-ci.sh",
+        "description": "git commit 前强制编译 + lint 通过"
+      }
+    ]
   }
 }
 ```
+
+| Hook | 触发时机 | 效果 |
+|------|---------|------|
+| `pre-spawn-gate-check.sh` | 每次 spawn Agent 前 | 两层验证：① PROGRESS.md 中 Gate 行 ✅ ② Gate Report 文件存在。缺一不可，不满足则 `exit 1` 阻断 spawn |
+| `pre-commit-ci.sh` | `git commit` 前 | Gate #2 编译/lint 硬拦截，不通过则阻止 commit |
 
 ---
 
