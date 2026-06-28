@@ -1,6 +1,6 @@
 # /harness-init — 首次初始化
 
-首次使用 Agent Team Harness 时，初始化当前项目。每个项目只需跑一次。
+首次使用 DiegoC-Harness 时，初始化当前项目。每个项目只需跑一次。
 
 ## 步骤 1：检测状态
 检查当前项目的 `harness/config.md` 是否已存在且已填写。
@@ -29,16 +29,39 @@
 ## 步骤 3：初始化项目目录
 创建 `docs/harness/` 目录。
 
-## 步骤 4：验证
+## 步骤 4：自动配置 Hook 硬拦截
+
+检查并写入 `.claude/settings.json`，追加 `PreToolUse` hook 配置：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "command": "bash ~/.claude/plugins/local/DiegoC-Harness/harness/hooks/pre-spawn-gate-check.sh"
+      }
+    ]
+  }
+}
+```
+
+如果 `.claude/settings.json` 已存在且已有 hook 配置，则合并而非覆盖。如果该 hook 已配置则跳过。
+
+## 步骤 5：验证
 - [ ] `harness/config.md` 所有必填项已填
 - [ ] `docs/harness/` 目录存在
+- [ ] `.claude/settings.json` 中已配置 Gate check hook
 
-## 步骤 5：完成
+## 步骤 6：完成
 告知用户：
 ```
-Agent Team Harness 就绪！
+DiegoC-Harness 就绪！
+
+已自动配置：
+  ✓ 项目配置   harness/config.md
+  ✓ Gate Hook  .claude/settings.json（每次 spawn Agent 前强制验证 Gate 通过）
 
 接下来：
-1.（可选）配置 CI hook → 参考插件 harness/hooks/
-2. 开始第一个功能 → /harness-dev "你的需求描述"
+  /harness-dev "你的需求描述"
 ```

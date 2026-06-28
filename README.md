@@ -271,9 +271,9 @@ Lead **并行 spawn** 三个 Agent：
 
 ---
 
-## 可选：Hook 硬拦截
+## Hook 硬拦截（自动配置）
 
-项目 `.claude/settings.json` 配置两个 Hook：
+`/harness-init` 会自动写入 `.claude/settings.json`，无需手动操作。配置如下：
 
 ```json
 {
@@ -281,13 +281,7 @@ Lead **并行 spawn** 三个 Agent：
     "PreToolUse": [
       {
         "matcher": "Agent",
-        "command": "bash harness/hooks/pre-spawn-gate-check.sh",
-        "description": "Agent spawn 前验证 Gate 已通过（✅ + Gate Report 物证），未通过则阻断"
-      },
-      {
-        "matcher": "Bash(git commit*)",
-        "command": "bash harness/hooks/pre-commit-ci.sh",
-        "description": "git commit 前强制编译 + lint 通过"
+        "command": "bash ~/.claude/plugins/local/DiegoC-Harness/harness/hooks/pre-spawn-gate-check.sh"
       }
     ]
   }
@@ -297,7 +291,6 @@ Lead **并行 spawn** 三个 Agent：
 | Hook | 触发时机 | 效果 |
 |------|---------|------|
 | `pre-spawn-gate-check.sh` | 每次 spawn Agent 前 | 两层验证：① PROGRESS.md 中 Gate 行 ✅ ② Gate Report 文件存在。缺一不可，不满足则 `exit 1` 阻断 spawn |
-| `pre-commit-ci.sh` | `git commit` 前 | Gate #2 编译/lint 硬拦截，不通过则阻止 commit |
 
 ---
 
