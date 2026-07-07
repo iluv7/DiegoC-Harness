@@ -20,18 +20,18 @@
 | 第 1 步：评估 | Lead | ❌ | — | — | |
 | 第 2 步：初始化 | Lead | ❌ | — | — | |
 | 阶段 1：需求 | Planner | ❌ | — | — | |
-| *关卡 #1* | Lead | ❌ | — | — | |
+| *关卡 #1* | Gatekeeper + Lead | ❌ | — | — | |
 | 阶段 1.5：方案（API） | API Impl | ❌ | — | — | |
 | 阶段 1.5：方案（Biz） | Biz Impl | ❌ | — | — | |
-| *关卡 #1.5* | Lead | ❌ | — | — | |
+| *关卡 #1.5* | Gatekeeper + Lead | ❌ | — | — | |
 | 阶段 2：编码（API） | API Impl | ❌ | — | — | |
 | 阶段 2：编码（Biz） | Biz Impl | ❌ | — | — | |
 | 阶段 2：测试设计 | QA Designer | ❌ | — | — | |
-| *关卡 #2（CI）* | CI Runner | ❌ | — | — | |
+| *关卡 #2* | CI Runner + Gatekeeper | ❌ | — | — | |
 | 阶段 3.1：代码审查 | Code Reviewer | ❌ | — | — | |
 | 阶段 3.2：QA 测试 | QA Runner | ❌ | — | — | |
 | 阶段 3.3：测试审查 | Code Reviewer | ❌ | — | — | |
-| *关卡 #3* | Lead | ❌ | — | — | |
+| *关卡 #3* | Gatekeeper + Lead | ❌ | — | — | |
 | 第 7 步：交付 | Lead | ❌ | — | — | |
 
 ## 复杂度评估
@@ -48,18 +48,19 @@
 | CI Runner | — | |
 | Code Reviewer | — | |
 | QA Runner | — | |
+| Gatekeeper | — | |
 
 ## 创建/修改的文件
 | 文件 | 操作 | 阶段 | Agent |
 |------|------|------|-------|
 
 ## 关卡摘要
-| 关卡 | 结果 | Gate Report | 问题 | 解决方案 |
-|------|------|-------------|------|---------|
-| #1 | ❌ | gate-1-report.md | — | — |
-| #1.5 | ❌ | gate-1.5-report.md | — | — |
-| #2 | ❌ | gate-2-report.md | — | — |
-| #3 | ❌ | gate-3-report.md | — | — |
+| 关卡 | 执行者 | 结果 | Gate Report | 问题 | 解决方案 |
+|------|--------|------|-------------|------|---------|
+| #1 | Gatekeeper + Lead | ❌ | gate-1-report.md | — | — |
+| #1.5 | Gatekeeper + Lead | ❌ | gate-1.5-report.md | — | — |
+| #2 | CI Runner + Gatekeeper | ❌ | gate-2-report.md | — | — |
+| #3 | Gatekeeper + Lead | ❌ | gate-3-report.md | — | — |
 
 ## 交付摘要
 <!-- 第 7 步填写 -->

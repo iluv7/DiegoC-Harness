@@ -1,6 +1,12 @@
 # 质量关卡
 
-每道关卡是强制的检查点。Lead spawn **Gatekeeper**（独立 Agent，`agents/gatekeeper.md`）执行对抗性检查，产出 Gate Report。Lead 审阅报告并决定：通过（继续）或失败（返工）。每道关卡最多 2 次返工。2 次后仍失败则升级给人类用户。
+每道关卡是强制的检查点。Lead spawn **Gatekeeper**（独立 Agent，`agents/gatekeeper.md`）执行对抗性检查，产出 Gate Report。
+
+Lead 审阅 Gate Report 时：
+- **All PASS → 直接通过**，无需逐项复查。Gatekeeper 已提供证据和分析，信任其判断。
+- **有 FAIL → 查看失败项**，决定返工或承认风险接受（写原因）。
+
+每道关卡最多 2 次返工。2 次后仍失败则升级给人类用户。
 
 Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益冲突（Lead 倾向于"放过"以推进进度）。Gatekeeper 没有执行责任，唯一使命是找问题，提供了 Lead 做不到的对抗性视角。
 
