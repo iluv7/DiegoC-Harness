@@ -19,11 +19,17 @@
 - 每个 Agent 完成后，立即更新 PROGRESS.md
 
 ### 3. 质量关卡裁决 + 人类审阅
-- Spawn Gatekeeper 执行对抗性检查并产出 Gate Report
-- 你审阅 Gate Report 结论：
-  - **All PASS** → 直接通过，无需查看细节
-  - **有 FAIL** → 查看失败项的具体证据和分析，决定：返工 或 承认风险接受（写原因）
-- 每道关卡最多 2 轮返工。2 轮后仍失败则升级给人类
+
+#### Gate 执行协议（重要）
+**Spawn Gatekeeper 前，必须先将 PROGRESS.md 中该 Gate 行标记为 `🟡`（进行中）。**
+Hook 认 `🟡` 为「Gate 正在执行」，不会阻断。如果不标 🟡，Gate 行为 ❌，Hook 会阻止 spawn（包括 Gatekeeper 自身）。
+流程：
+1. 将 Gate 行改为 `🟡`
+2. Spawn Gatekeeper 执行对抗性检查并产出 Gate Report
+3. 你审阅 Gate Report 结论：
+   - **All PASS** → 直接通过，无需查看细节
+   - **有 FAIL** → 查看失败项的具体证据和分析，决定：返工 或 承认风险接受（写原因）
+4. 每道关卡最多 2 轮返工。2 轮后仍失败则升级给人类
 
 #### 关卡完成后的人类审阅（HITL）
 **如果 `harness/config.md` 中 `hitl_enabled` 为 `false`（默认），跳过此节——直接标记 ✅ 继续。**

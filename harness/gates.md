@@ -6,6 +6,7 @@
 
 每道 Gate 执行如下：
 
+0. **Lead 标记 `🟡`**：spawn Gatekeeper 前，先将 PROGRESS.md 中该 Gate 行改为 `🟡`（进行中），否则 Hook 会阻止一切 Agent spawn（包括 Gatekeeper 自身）。
 1. **Gatekeeper 产出 Gate Report** → 写入 `reviews/gate-{N}-report.md`
 2. **Lead 审阅 Gate Report**：
    - **All PASS → 直接通过**，无需逐项复查。Gatekeeper 已提供证据和分析，信任其判断。
@@ -13,6 +14,12 @@
 3. **人类审阅（HITL，可选）**：若 `harness/config.md` 中 `hitl_enabled: true`，Lead 将 Gate 行标记为 `🔍`，向人类展示摘要并等待批准。人类批准后 Lead 改为 `✅` 才可继续。默认 `false` 时此步跳过，Lead 直接标记 `✅`。
    - `🔍` 状态由 Hook 硬拦截（仅在 `hitl_enabled: true` 时）——在改为 `✅` 之前无法 spawn 下一阶段的 Agent。
 4. 每道关卡最多 2 次返工。2 次后仍失败则升级给人类裁决。
+
+> **Hook 对 Gate 状态的处理**：
+> - `🟡` — 放行（Gate 执行中，不拦 Gatekeeper 也不拦下一步）
+> - `❌` — 阻断（Gate 未开始，阻止跳过）
+> - `🔍` — HITL 开时阻断（等人类），HITL 关时视同 ✅
+> - `✅` — 放行（Gate 通过，需物证）
 
 Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益冲突（Lead 倾向于"放过"以推进进度）。Gatekeeper 没有执行责任，唯一使命是找问题，提供了 Lead 做不到的对抗性视角。
 
