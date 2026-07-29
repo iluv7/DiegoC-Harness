@@ -41,12 +41,32 @@ if [[ -z "$PROGRESS_FILES" ]]; then
     exit 0
 fi
 
+# 读取项目 config.md 中的 hitl_enabled 值
+# 参数: feature_dir (如 docs/harness/my-feature)
+# 返回: "true" 或 "false"（默认 false）
+is_hitl_enabled() {
+    local feature_dir="$1"
+    local project_root
+    project_root=$(cd "$feature_dir/../.." 2>/dev/null && pwd || true)
+    local config_file="${project_root}/harness/config.md"
+    if [[ -f "$config_file" ]]; then
+        local val
+        val=$(grep -oP 'hitl_enabled.*?`\K(true|false)' "$config_file" 2>/dev/null | head -1 || true)
+        if [[ "$val" == "true" ]]; then
+            echo "true"
+            return
+        fi
+    fi
+    echo "false"
+}
+
 BLOCKED=false
 BLOCK_REASON=""
 
 for progress_file in $PROGRESS_FILES; do
     feature_dir=$(dirname "$progress_file")
     feature_name=$(basename "$feature_dir")
+    hitl_enabled=$(is_hitl_enabled "$feature_dir")
 
     # 提取 Markdown 表格行
     table=$(grep '^|' "$progress_file" 2>/dev/null || true)
@@ -72,22 +92,40 @@ for progress_file in $PROGRESS_FILES; do
             continue
         fi
 
+        # 🔍 = Gate 完成待人类审阅。HITL 关闭时等同于 ✅，直接放行
+        if echo "$row_status" | grep -q '🔍'; then
+            if [[ "$hitl_enabled" != "true" ]]; then
+                prev_step="$step"
+                found_last_done=true
+                continue
+            fi
+        fi
+
         # 当前行未完成，上一行是 ✅ → 这就是"第一个待办"
         if $found_last_done; then
             if echo "$step" | grep -F '*关卡' >/dev/null 2>&1; then
-                pending_gate="$step"   # Gate 未完成（❌/🟡）
+                pending_gate="$step"        # Gate 未完成
+                pending_gate_status="$row_status"   # 记录具体状态
             fi
             found_last_done=false
             break
         fi
     done <<< "$table"
 
-    # --- 情况 1：有待办的 Gate 且未完成 → 阻断 ---
+    # --- 情况 1：有待办的 Gate 且未完成 → 根据状态区分阻断原因 ---
     if [[ -n "$pending_gate" ]]; then
         gate_label=$(echo "$pending_gate" | sed 's/\*//g' | xargs)
-        BLOCKED=true
-        BLOCK_REASON="功能 '${feature_name}'：'${prev_step}' 已完成，但 **${gate_label}** 尚未通过。
+        if echo "$pending_gate_status" | grep -q '🔍'; then
+            # Gate 已完成，等待人类审阅（此时 hitl_enabled 必为 true，否则上面已跳过了）
+            BLOCKED=true
+            BLOCK_REASON="功能 '${feature_name}'：${gate_label} 报告已产出，**等待人类审阅**。
+请审阅 Gate Report 后告诉 Lead 是否批准（批准后 Lead 会将状态改为 ✅ 并继续流水线）。"
+        else
+            # Gate 未开始或在执行中
+            BLOCKED=true
+            BLOCK_REASON="功能 '${feature_name}'：'${prev_step}' 已完成，但 **${gate_label}** 尚未通过。
 请先完成该 Gate 检查（见 harness/gates.md），在 PROGRESS.md 中将该 Gate 标记为 ✅ 后重试。"
+        fi
         break
     fi
 

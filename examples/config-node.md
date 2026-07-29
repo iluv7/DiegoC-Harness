@@ -33,4 +33,7 @@
 - function_naming: `camelCase`
 - variable_naming: `camelCase`
 - indent: `spaces: 2`
+
+## HITL（人机协作）
+- hitl_enabled: `false`
 ```

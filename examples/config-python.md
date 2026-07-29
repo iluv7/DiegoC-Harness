@@ -33,4 +33,7 @@
 - function_naming: `snake_case`
 - variable_naming: `snake_case`
 - indent: `spaces: 4`
+
+## HITL（人机协作）
+- hitl_enabled: `false`
 ```

@@ -33,4 +33,7 @@
 - function_naming: `PascalCase（公开）/ camelCase（私有）`
 - variable_naming: `camelCase`
 - indent: `tabs`
+
+## HITL（人机协作）
+- hitl_enabled: `false`
 ```

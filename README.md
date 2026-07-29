@@ -11,7 +11,7 @@
 |------|------|
 | 🧠 **100% 提示词驱动** | 没有一行脚本逻辑——所有 Agent 行为、流水线编排、质量关卡全部由提示词定义。改行为就是改 Markdown，不需要写代码。 |
 | 🤖 **9 个专职 Agent** | Lead、Gatekeeper、Planner、API Implementer、Biz Implementer、QA Designer、CI Runner、Code Reviewer、QA Runner——各司其职，边界清晰。Agent 之间不直接对话，通过 Lead + qa-log.md 协调。 |
-| 🛡️ **4 道质量关卡 + Gatekeeper 对抗性检查** | 需求质量 → 方案一致性 → 编译+Lint → 审查+测试。每关 spawn 独立的 Gatekeeper Agent 做对抗性检查（不参与产出，唯一使命是找问题），产出门禁报告（Gate Report）。Lead 审阅报告并执行裁决。每关最多 2 次返工，2 次后升级人类。 |
+| 🛡️ **4 道质量关卡 + Gatekeeper 对抗性检查** | 需求质量 → 方案一致性 → 编译+Lint → 审查+测试。每关 spawn 独立的 Gatekeeper Agent 做对抗性检查（不参与产出，唯一使命是找问题），产出门禁报告（Gate Report）。Lead 看结论：All PASS 直接通过，有 FAIL 才查看细节决定返工或接受。每关最多 2 次返工，2 次后升级人类。 |
 | 🔒 **Hook 硬拦截** | `PreToolUse` hook 在每次 spawn Agent 前强制检查：① PROGRESS.md 中 Gate 行是否 ✅ ② 对应的 Gate Report 文件是否存在（物证）。两者缺一不可，Gate 被跳过或伪造则物理上无法 spawn 下一个 Agent。 |
 | 🌐 **不挑技术栈** | Agent 定义和流水线中不硬编码任何语言或工具。Go/Python/Node.js/Java/Rust/... 所有差异集中在 `harness/config.md`（30 行配置）。 |
 | 🔄 **中断恢复** | 会话断了？重敲 `/harness-dev`，Lead 从 `PROGRESS.md` 中断点自动恢复，已完成的步骤不会重新执行。 |
@@ -130,7 +130,7 @@ Planner 在 `qa-log.md` 里抛出 6 个待解决问题，Lead 基于跨领域观
 
 ![阶段 1：Planner 需求分析 + qa-log Q&A](screenshots/3.png)
 
-**关卡 #1**：Lead spawn Gatekeeper。Gatekeeper 对抗性检查需求质量——覆盖是否全面、验收标准是否可衡量、API 契约类型是否精确、有无未回答的问题。产出门禁报告 `reviews/gate-1-report.md`。Lead 审阅结论后裁决。**6/6 全部通过。**
+**关卡 #1**：Lead spawn Gatekeeper。Gatekeeper 对抗性检查需求质量——覆盖是否全面、验收标准是否可衡量、API 契约类型是否精确、有无未回答的问题。产出门禁报告 `reviews/gate-1-report.md`。6/6 All PASS，Lead 直接通过。**6/6 全部通过。**
 
 ![关卡 #1：需求质量验证通过](screenshots/4.png)
 
@@ -145,7 +145,7 @@ Lead **并行 spawn** 两个 Agent：
 
 ![阶段 1.5：API + Biz 并行设计方案](screenshots/5.png)
 
-**关卡 #1.5**：Lead spawn Gatekeeper 交叉对比 API 和 Biz 方案——接口签名是否对齐、有无文件冲突、路由 & Service 是否全覆盖。产出门禁报告 `reviews/gate-1.5-report.md`。**8/8 接口签名精确匹配，零文件冲突，8 个 HTTP 端点 + 8 个业务操作全覆盖。直接通过。**
+**关卡 #1.5**：Lead spawn Gatekeeper 交叉对比 API 和 Biz 方案——接口签名是否对齐、有无文件冲突、路由 & Service 是否全覆盖。产出门禁报告 `reviews/gate-1.5-report.md`。**8/8 All PASS，直接通过。**
 
 ![关卡 #1.5：接口一致性验证通过](screenshots/6.png)
 
@@ -165,7 +165,7 @@ Lead **并行 spawn** 三个 Agent：
 
 ![阶段 2：3 Agent 并行编码](screenshots/8.png)
 
-**关卡 #2**：Lead spawn CI Runner 跑编译 + lint，完成后 spawn Gatekeeper 验证 CI 报告完整性和质量，产出门禁报告 `reviews/gate-2-report.md`。
+**关卡 #2**：Lead spawn CI Runner 跑编译 + lint，完成后 spawn Gatekeeper 验证 CI 报告完整性和质量，产出门禁报告 `reviews/gate-2-report.md`。All PASS，直接通过。
 
 ![关卡 #2：CI Runner 编译 + lint 全通过](screenshots/9.png)
 
@@ -187,7 +187,7 @@ Lead **并行 spawn** 三个 Agent：
 
 ![阶段 3：3.1 + 3.2 + 修复回路](screenshots/10.png)
 
-**关卡 #3**：Lead spawn Gatekeeper 做最终验收——交叉审查代码报告、QA 报告、测试审查报告，逐项检查严重问题清零、测试全绿、覆盖率达标、qa-log 干净、需求可追溯。产出门禁报告 `reviews/gate-3-report.md`。**0 个严重问题，72/72 测试全绿，通过。**
+**关卡 #3**：Lead spawn Gatekeeper 做最终验收——交叉审查代码报告、QA 报告、测试审查报告，逐项检查严重问题清零、测试全绿、覆盖率达标、qa-log 干净、需求可追溯。产出门禁报告 `reviews/gate-3-report.md`。**All PASS，通过。**
 
 ![关卡 #3：最终质量验收通过](screenshots/11.png)
 
@@ -253,7 +253,7 @@ Lead **并行 spawn** 三个 Agent：
 
 | 角色 | 做什么 | 写代码？ |
 |------|--------|:---:|
-| **Lead** | 总协调，不写代码，审阅 Gate Report 并裁决 | ✗ |
+| **Lead** | 总协调，不写代码，看 Gate Report 结论：All PASS 直接过，有 FAIL 才介入裁决 | ✗ |
 | **Gatekeeper** | 对抗性检查 Gate，产出门禁报告（Gate Report） | ✗ |
 | **Planner** | 读 PRD → 结构化需求 + API 契约 | ✗ |
 | **API Implementer** | API/handler/路由 + 请求校验 | ✓ |
