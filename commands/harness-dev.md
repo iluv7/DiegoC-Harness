@@ -69,6 +69,13 @@ Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）
 
 ### 第 7 步：交付
 
+1. 汇总所有产出，输出交付摘要（文件数、测试结果、审查情况）
+2. **审视 qa-log.md**，提取本轮有价值的问题/解决过程，追加到 `harness/pitfalls/lessons-learned.md`：
+   - 哪类错误反复出现？（如接口类型不一致、文件归属冲突）
+   - 有没有 Lead 自己答不上来、升级给人类的问题？
+   - 有没有发现了新的约束规则可以加到 Agent prompt 里？
+   - 格式同 lessons-learned.md 现有条目：「坑：xxx」→「症状」→「原因」→「修复」
+
 ## 核心原则
 
 1. Agent 之间不直接对话 — qa-log.md + Lead
