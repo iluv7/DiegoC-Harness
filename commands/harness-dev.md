@@ -48,26 +48,33 @@ S=3人 M=6人 L=8人。
 
 ### 阶段 1：需求分析
 Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）→ 写 spec.md。
-关卡 #1：Spawn Gatekeeper（prompt = gatekeeper.md + spec.md + gates.md Gate #1 清单）→ 写 reviews/gate-1-report.md。Lead 看结论：All PASS 直接过，有 FAIL 则查看失败项决定返工或接受。**标记 🔍，展示摘要给人类审阅，批准后改 ✅**。最多 2 次返工。
+关卡 #1：Spawn Gatekeeper（prompt = gatekeeper.md + spec.md + gates.md Gate #1 清单）→ 写 reviews/gate-1-report.md。Lead 审阅 Gate Report，标记 ✅。最多 2 次返工。（HITL 开时先标 🔍 等人类批准）
 
 ### 阶段 1.5：技术方案（并行 spawn 两个）
 - Agent A（api-implementer.md）→ tech-design/api.md
 - Agent B（biz-implementer.md）→ tech-design/biz.md
-关卡 #1.5：Spawn Gatekeeper（prompt = gatekeeper.md + tech-design/api.md + tech-design/biz.md + spec.md + gates.md Gate #1.5 清单）→ 写 reviews/gate-1.5-report.md。Lead 看结论：All PASS 直接过，有 FAIL 则查看失败项决定返工或接受。All PASS 后写 contracts/api.md。**标记 🔍，展示摘要给人类审阅，批准后改 ✅**。最多 2 次返工。
+关卡 #1.5：Spawn Gatekeeper（prompt = gatekeeper.md + tech-design/api.md + tech-design/biz.md + spec.md + gates.md Gate #1.5 清单）→ 写 reviews/gate-1.5-report.md。Lead 审阅 Gate Report，通过后写 contracts/api.md，标记 ✅。最多 2 次返工。（HITL 开时先标 🔍 等人类批准）
 
 ### 阶段 2：编码（并行 spawn 三个）
 - API Impl → 写代码到 api_layer_pattern
 - Biz Impl → 写代码到 biz/dao_layer_pattern
 - QA Designer → 写 test-matrix.md（只设计）
-关卡 #2：Spawn CI Runner 跑编译+lint。完成后 Spawn Gatekeeper（prompt = gatekeeper.md + ci.md + gates.md Gate #2 清单）→ 写 reviews/gate-2-report.md，验证 CI 报告完整性和质量。Lead 看结论：All PASS 直接过，有 FAIL 则查看失败项决定返工或接受。**标记 🔍，展示摘要给人类审阅，批准后改 ✅**。最多 2 次返工。
+关卡 #2：Spawn CI Runner 跑编译+lint。完成后 Spawn Gatekeeper（prompt = gatekeeper.md + ci.md + gates.md Gate #2 清单）→ 写 reviews/gate-2-report.md。Lead 审阅，标记 ✅。最多 2 次返工。（HITL 开时先标 🔍 等人类批准）
 
 ### 阶段 3：验收
 - 3.1 Code Reviewer → reviews/code.md
 - 3.2 QA Runner → 写测试+跑测试 → reviews/qa.md
 - 3.3 Code Reviewer（测试模式）→ reviews/test-code-review.md
-关卡 #3：Spawn Gatekeeper（prompt = gatekeeper.md + reviews/code.md + reviews/qa.md + reviews/test-code-review.md + gates.md Gate #3 清单）→ 写 reviews/gate-3-report.md。Lead 看结论：All PASS 直接过，有 FAIL 则查看失败项决定返工或接受。**标记 🔍，展示摘要给人类审阅，批准后改 ✅**。最多 2 轮返工。
+关卡 #3：Spawn Gatekeeper（prompt = gatekeeper.md + reviews/code.md + reviews/qa.md + reviews/test-code-review.md + gates.md Gate #3 清单）→ 写 reviews/gate-3-report.md。Lead 审阅，标记 ✅。最多 2 轮返工。（HITL 开时先标 🔍 等人类批准）
 
 ### 第 7 步：交付
+
+1. 汇总所有产出，输出交付摘要（文件数、测试结果、审查情况）
+2. **审视 qa-log.md**，提取本轮有价值的问题/解决过程，追加到 `harness/pitfalls/lessons-learned.md`：
+   - 哪类错误反复出现？（如接口类型不一致、文件归属冲突）
+   - 有没有 Lead 自己答不上来、升级给人类的问题？
+   - 有没有发现了新的约束规则可以加到 Agent prompt 里？
+   - 格式同 lessons-learned.md 现有条目：「坑：xxx」→「症状」→「原因」→「修复」
 
 ## 核心原则
 

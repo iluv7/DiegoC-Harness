@@ -10,9 +10,11 @@
 2. **Lead 审阅 Gate Report**：
    - **All PASS → 直接通过**，无需逐项复查。Gatekeeper 已提供证据和分析，信任其判断。
    - **有 FAIL → 查看失败项**，决定返工或承认风险接受（写原因）。
-3. **人类审阅（HITL，可选）**：若 `harness/config.md` 中 `hitl_enabled: true`，Lead 将 Gate 行标记为 `🔍`，向人类展示摘要并等待批准。人类批准后 Lead 改为 `✅` 才可继续。默认 `false` 时此步跳过，Lead 直接标记 `✅`。
-   - `🔍` 状态由 Hook 硬拦截（仅在 `hitl_enabled: true` 时）——在改为 `✅` 之前无法 spawn 下一阶段的 Agent。
+3. **Lead 标记 `✅`**，继续流水线。默认跳过此步时直接标记。
+   - 若 `hitl_enabled: true`，先标记 `🔍` 等待人类审阅，批准后再改 `✅`。
 4. 每道关卡最多 2 次返工。2 次后仍失败则升级给人类裁决。
+
+> **Hook 的职责**：每次 Agent spawn 前，查 PROGRESS.md 中最后一个 `✅` 的步骤。如果该步骤是 Gate 行，对应的 Gate Report 文件必须存在。不存在 → 阻断。存在 → 放行。唯一的硬约束是 `✅` 必须有物证。
 
 Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益冲突（Lead 倾向于"放过"以推进进度）。Gatekeeper 没有执行责任，唯一使命是找问题，提供了 Lead 做不到的对抗性视角。
 
