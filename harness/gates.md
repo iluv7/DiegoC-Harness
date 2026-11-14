@@ -67,7 +67,7 @@ Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益�
 
 ---
 
-## 关卡 #2：编译与 Lint
+## 关卡 #2：编译与 Lint 与 P0 测试
 
 **位置**：阶段 2（编码）之后 | **评估者**：CI Runner（执行）+ Lead（裁决）
 
@@ -75,15 +75,16 @@ Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益�
 
 - [ ] **编译**：退出码 0，无错误
 - [ ] **Lint**：0 错误（项目已有的存量警告可以放行）
+- [ ] **P0 测试全绿**：`{test_command}` 中 P0 用例 0 失败（**红灯不放行**）
+- [ ] **P0 可追溯**：每个 P0 测试能在 test-matrix.md 中找到对应用例（防止自造测试凑绿灯）
 - [ ] **Proto**：（如启用）退出码 0，无错误
 - [ ] **无新增警告**：本次功能没有引入新的 lint 警告
 
-### 失败归属
+### 失败归属（TDD 红灯 → 绿灯）
 
-解析错误输出确定责任：
-- 文件在 `api_layer_pattern` 下 → API Implementer
-- 文件在 `biz_layer_pattern` / `dao_layer_pattern` 下 → Biz Implementer
-- 涉及两层 → 看哪个 Agent 的代码报错
+- 编译失败 → 文件在 `api_layer_pattern` 下 → API Implementer；在 `biz_layer_pattern` / `dao_layer_pattern` 下 → Biz Implementer（大多是测试引用的接口/stub 未定义）
+- P0 测试失败 → 实现未完成，该层实现者继续实现（**禁止改测试**）
+- 测试与 spec 矛盾 → 升级 Lead，走 spec 变更流程（更新 spec → test-matrix → 测试）
 - 不明确 → 两个 Agent 都检查，通过 qa-log.md 协调
 
 ---
@@ -118,7 +119,7 @@ Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益�
 |------|------|---------|--------|--------|
 | #1 | 阶段 1 后 | 需求质量 | Gatekeeper | Lead |
 | #1.5 | 阶段 1.5 后 | 方案一致性 | Gatekeeper | Lead |
-| #2 | 阶段 2 后 | 编译 + lint | CI Runner + Gatekeeper | Lead |
+| #2 | 阶段 2 后 | 编译 + lint + P0 测试 | CI Runner + Gatekeeper | Lead |
 | #3 | 阶段 3 后 | 审查 + 测试 | Gatekeeper | Lead |
 
 每个 Gate 的执行流程：Lead spawn Gatekeeper → Gatekeeper 出 Gate Report → Lead 审阅并裁决（通过/返工）。

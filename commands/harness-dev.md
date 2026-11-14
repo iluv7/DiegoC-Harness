@@ -55,15 +55,15 @@ Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）
 - Agent B（biz-implementer.md）→ tech-design/biz.md
 关卡 #1.5：Spawn Gatekeeper（prompt = gatekeeper.md + tech-design/api.md + tech-design/biz.md + spec.md + gates.md Gate #1.5 清单）→ 写 reviews/gate-1.5-report.md。Lead 审阅 Gate Report，通过后写 contracts/api.md，标记 ✅。最多 2 次返工。（HITL 开时先标 🔍 等人类批准）
 
-### 阶段 2：编码（并行 spawn 三个）
-- API Impl → 写代码到 api_layer_pattern
-- Biz Impl → 写代码到 biz/dao_layer_pattern
-- QA Designer → 写 test-matrix.md（只设计）
-关卡 #2：Spawn CI Runner 跑编译+lint。完成后 Spawn Gatekeeper（prompt = gatekeeper.md + ci.md + gates.md Gate #2 清单）→ 写 reviews/gate-2-report.md。Lead 审阅，标记 ✅。最多 2 次返工。（HITL 开时先标 🔍 等人类批准）
+### 阶段 2：编码（并行 spawn 三个，TDD：红灯 → 绿灯）
+- API Impl → 接口+stub → 实现到绿灯（写代码到 api_layer_pattern）
+- Biz Impl → 接口+stub → 实现到绿灯（写代码到 biz/dao_layer_pattern）
+- QA Designer → 写 test-matrix.md + 实现 P0 验收测试（红灯）
+关卡 #2：Spawn CI Runner 跑编译+lint+测试（**P0 全绿才通过**）。完成后 Spawn Gatekeeper（prompt = gatekeeper.md + ci.md + gates.md Gate #2 清单）→ 写 reviews/gate-2-report.md，验证 CI 报告完整性和质量。Lead 审阅，标记 ✅。最多 2 次返工。红灯裁决见 lead.md「红灯裁决」。（HITL 开时先标 🔍 等人类批准）
 
 ### 阶段 3：验收
 - 3.1 Code Reviewer → reviews/code.md
-- 3.2 QA Runner → 写测试+跑测试 → reviews/qa.md
+- 3.2 QA Runner → 补 P1/P2 测试 + 全量回归 → reviews/qa.md（P0 已在阶段 2 实现；P0 修改需 Lead 批准 + test-matrix 留痕）
 - 3.3 Code Reviewer（测试模式）→ reviews/test-code-review.md
 关卡 #3：Spawn Gatekeeper（prompt = gatekeeper.md + reviews/code.md + reviews/qa.md + reviews/test-code-review.md + gates.md Gate #3 清单）→ 写 reviews/gate-3-report.md。Lead 审阅，标记 ✅。最多 2 轮返工。（HITL 开时先标 🔍 等人类批准）
 
@@ -85,3 +85,4 @@ Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）
 5. 始终用 `general-purpose` 类型 spawn，prompt 中内联角色定义
 6. Gate 检查是强制的——不把 Gate 标记 ✅ 就无法 spawn 下一阶段的 Agent（由 `pre-spawn-gate-check.sh` hook 硬拦截）
 7. 做 Gate 前，先把 PROGRESS.md 中该 Gate 行标记 🟡（进行中）再 spawn Gatekeeper——否则 Hook 会连 Gatekeeper 的 spawn 一起拦
+8. TDD 铁律——实现者**禁止修改任何测试文件**。测试红了只有两条路：实现生产代码，或走 spec 变更流程（更新 spec → test-matrix → 测试）。P0 测试修改必须经 Lead 批准

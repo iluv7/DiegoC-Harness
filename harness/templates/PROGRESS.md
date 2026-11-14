@@ -26,9 +26,9 @@
 | 阶段 1.5：方案（API） | API Impl | ❌ | — | — | |
 | 阶段 1.5：方案（Biz） | Biz Impl | ❌ | — | — | |
 | *关卡 #1.5* | Gatekeeper + Lead | ❌ | — | — | |
-| 阶段 2：编码（API） | API Impl | ❌ | — | — | |
-| 阶段 2：编码（Biz） | Biz Impl | ❌ | — | — | |
-| 阶段 2：测试设计 | QA Designer | ❌ | — | — | |
+| 阶段 2：编码（API） | API Impl | ❌ | — | — | 接口+stub → 绿灯 |
+| 阶段 2：编码（Biz） | Biz Impl | ❌ | — | — | 接口+stub → 绿灯 |
+| 阶段 2：测试矩阵 + P0 测试 | QA Designer | ❌ | — | — | 红灯先行 |
 | *关卡 #2* | CI Runner + Gatekeeper | ❌ | — | — | |
 | 阶段 3.1：代码审查 | Code Reviewer | ❌ | — | — | |
 | 阶段 3.2：QA 测试 | QA Runner | ❌ | — | — | |
