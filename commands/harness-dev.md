@@ -84,3 +84,4 @@ Spawn general-purpose Agent（prompt = planner.md 角色定义 + config + PRD）
 4. 关卡 2 次返工后升级人类
 5. 始终用 `general-purpose` 类型 spawn，prompt 中内联角色定义
 6. Gate 检查是强制的——不把 Gate 标记 ✅ 就无法 spawn 下一阶段的 Agent（由 `pre-spawn-gate-check.sh` hook 硬拦截）
+7. 做 Gate 前，先把 PROGRESS.md 中该 Gate 行标记 🟡（进行中）再 spawn Gatekeeper——否则 Hook 会连 Gatekeeper 的 spawn 一起拦
