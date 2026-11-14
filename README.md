@@ -12,7 +12,7 @@
 | 🧠 **100% 提示词驱动** | 没有一行脚本逻辑——所有 Agent 行为、流水线编排、质量关卡全部由提示词定义。改行为就是改 Markdown，不需要写代码。 |
 | 🤖 **9 个专职 Agent** | Lead、Gatekeeper、Planner、API Implementer、Biz Implementer、QA Designer、CI Runner、Code Reviewer、QA Runner——各司其职，边界清晰。Agent 之间不直接对话，通过 Lead + qa-log.md 协调。 |
 | 🛡️ **4 道质量关卡 + Gatekeeper 对抗性检查** | 需求质量 → 方案一致性 → 编译+Lint → 审查+测试。每关 spawn 独立的 Gatekeeper Agent 做对抗性检查（不参与产出，唯一使命是找问题），产出门禁报告（Gate Report）。Lead 看结论：All PASS 直接通过，有 FAIL 才查看细节决定返工或接受。每关最多 2 次返工，2 次后升级人类。 |
-| 🔒 **Hook 硬拦截** | `PreToolUse` hook 在每次 spawn Agent 前强制检查：① PROGRESS.md 中 Gate 行是否 ✅ ② 对应的 Gate Report 文件是否存在（物证）。两者缺一不可，Gate 被跳过或伪造则物理上无法 spawn 下一个 Agent。 |
+| 🔒 **Hook 硬拦截** | `PreToolUse` hook 在每次 spawn Agent 前强制检查：① 未完成的 Gate 直接拦截（`🟡` 进行中放行）② Gate Report 物证必须存在 ③ 结论必须精确为 `ALL PASS`。任一条件不满足就无法 spawn 下一个 Agent。 |
 | 🧑‍⚖️ **HITL 人类审阅（可开关）** | `hitl_enabled: true` 时，每道 Gate 完成后暂停等待人类审阅才继续。默认关闭，全自动运行。Hook 在 `🔍` 状态时硬阻断，人类批准后 Lead 改 `✅` 放行。 |
 | 🌐 **不挑技术栈** | Agent 定义和流水线中不硬编码任何语言或工具。Go/Python/Node.js/Java/Rust/... 所有差异集中在 `harness/config.md`（30 行配置）。 |
 | 🔄 **中断恢复** | 会话断了？重敲 `/harness-dev`，Lead 从 `PROGRESS.md` 中断点自动恢复，已完成的步骤不会重新执行。 |
@@ -291,7 +291,7 @@ Lead **并行 spawn** 三个 Agent：
 
 | Hook | 触发时机 | 效果 |
 |------|---------|------|
-| `pre-spawn-gate-check.sh` | 每次 spawn Agent 前 | 两层验证：① PROGRESS.md 中 Gate 行 ✅/🔍 ② Gate Report 文件存在。不满足则 `exit 1` 阻断 spawn。🔍 仅在 `hitl_enabled: true` 时阻断。 |
+| `pre-spawn-gate-check.sh` | 每次 spawn Agent 前 | 验证 Gate 未被跳过（`🟡` 进行中放行）、Gate Report 物证存在、结论为 `ALL PASS`。不满足则 `exit 1` 阻断 spawn。 |
 
 ---
 
@@ -299,7 +299,7 @@ Lead **并行 spawn** 三个 Agent：
 
 开启 `harness/config.md` 中的 `hitl_enabled: true` 后，每道 Gate 完成后会暂停等待人类审阅：
 
-1. Gatekeeper 产出 Gate Report
+1. Lead 将 Gate 行标记 `🟡` → spawn Gatekeeper 产出 Gate Report
 2. Lead 标记 `🔍`，展示摘要给人类
 3. 人类审阅后批准（或要求返工）
 4. Lead 改 `✅`，Hook 放行，流水线继续

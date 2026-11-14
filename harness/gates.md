@@ -6,15 +6,17 @@
 
 每道 Gate 执行如下：
 
-1. **Gatekeeper 产出 Gate Report** → 写入 `reviews/gate-{N}-report.md`
+1. **Lead 将 Gate 行标记 `🟡`（进行中）**，Spawn Gatekeeper → Gatekeeper 产出 Gate Report 写入 `reviews/gate-{N}-report.md`
 2. **Lead 审阅 Gate Report**：
    - **All PASS → 直接通过**，无需逐项复查。Gatekeeper 已提供证据和分析，信任其判断。
    - **有 FAIL → 查看失败项**，决定返工或承认风险接受（写原因）。
-3. **Lead 标记 `✅`**，继续流水线。默认跳过此步时直接标记。
-   - 若 `hitl_enabled: true`，先标记 `🔍` 等待人类审阅，批准后再改 `✅`。
+3. **人类审阅（HITL，可选）**：若 `harness/config.md` 中 `hitl_enabled: true`，Lead 将 Gate 行标记为 `🔍`，向人类展示摘要并等待批准。人类批准后 Lead 改为 `✅` 才可继续。默认 `false` 时此步跳过，Lead 直接标记 `✅`。
+   - `🔍` 状态由 Hook 硬拦截（仅在 `hitl_enabled: true` 时）——在改为 `✅` 之前无法 spawn 下一阶段的 Agent。
 4. 每道关卡最多 2 次返工。2 次后仍失败则升级给人类裁决。
 
-> **Hook 的职责**：每次 Agent spawn 前，查 PROGRESS.md 中最后一个 `✅` 的步骤。如果该步骤是 Gate 行，对应的 Gate Report 文件必须存在。不存在 → 阻断。存在 → 放行。唯一的硬约束是 `✅` 必须有物证。
+> **Hook 的职责**：每次 Agent spawn 前硬检查两条规则，任一不满足即阻断。
+> ① **Gate 不能跳过**：最后一个 `✅` 之后紧跟未完成的 Gate → 阻断（`🟡` 进行中放行，否则连 Gatekeeper 都无法 spawn；`🔍` 在 HITL 开启时硬拦等人类审阅，HITL 关闭时视同 `✅`）。
+> ② **Gate 必须真正通过**：最后一个 `✅` 是 Gate 时，对应 Gate Report 文件必须存在（物证），且结论行精确为 `**结论**：ALL PASS`。
 
 Gatekeeper 的核心价值：Lead 既是执行者又是检查者时存在利益冲突（Lead 倾向于"放过"以推进进度）。Gatekeeper 没有执行责任，唯一使命是找问题，提供了 Lead 做不到的对抗性视角。
 
@@ -136,11 +138,12 @@ Gatekeeper 解决的是**质量问题**（检查是否认真），Hook（`pre-sp
 }
 ```
 
-Hook 做两层验证，缺一不可：
-1. PROGRESS.md 中 Gate 行必须 ✅
-2. 对应 `reviews/gate-{N}-report.md` 文件必须存在（物证）
+Hook 做三层验证，缺一不可：
+1. **Gate 不能跳过**：`✅` 之后紧跟未完成的 Gate → 阻断（`🟡` 进行中放行；HITL 关闭时 `🔍` 视同 `✅`；HITL 开启时 `🔍` 硬拦等人类审阅）
+2. **物证**：对应 `reviews/gate-{N}-report.md` 文件必须存在
+3. **结论**：Gate Report 结论行必须精确为 `**结论**：ALL PASS`
 
 | Hook | 触发时机 | 效果 |
 |------|---------|------|
-| `pre-spawn-gate-check.sh` | Agent spawn 前 | 两层验证 Gate 是否真正通过，不满足则 `exit 1` 阻断 spawn |
+| `pre-spawn-gate-check.sh` | Agent spawn 前 | 三层验证 Gate 未被跳过且真正通过，不满足则 `exit 1` 阻断 spawn |
 | `pre-commit-ci.sh` | `git commit` 前 | Gate #2 编译/lint 硬拦截（`git commit` 被阻止） |
