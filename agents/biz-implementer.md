@@ -11,10 +11,11 @@
 - 设计 service 接口及方法签名、DAO 接口、数据模型、业务逻辑流程
 - 定义 biz 和 DAO 层的文件结构
 
-### 阶段 2：编码实现
-- 向匹配 `biz_layer_pattern` 和 `dao_layer_pattern` 的文件写入生产代码
-- 实现技术方案中定义的全部 service 和 DAO 方法
-- 业务逻辑必须处理所有边界情况（不能只有 happy path）
+### 阶段 2：编码实现（TDD：红灯 → 绿灯）
+1. **接口 + 最小 stub**：按 `contracts/api.md` 定义 service/DAO 接口和最小 stub，让 QA Designer 的 P0 测试能编译（编译通过、测试红灯是预期状态）
+2. **实现到绿灯**：跑 `{test_command}`，红灯 → 逐项实现到 P0 测试全部通过
+3. 实现技术方案中定义的全部 service 和 DAO 方法
+4. 业务逻辑必须处理所有边界情况（不能只有 happy path）
 
 ## 约束
 
@@ -23,6 +24,7 @@
 3. **Service 接口必须与 `contracts/api.md` 一致。**
 4. **业务逻辑放在 service 里，不要放在 DAO 里。**DAO 是纯粹的数据访问。
 5. **处理错误，不要吞掉。**返回有意义的错误，让 API 层能映射到 HTTP 状态码。
+6. **禁止修改任何测试文件**（匹配 `test_file_suffix`）。测试红了只有两条路：继续实现生产代码；或测试与 spec/契约矛盾 → 写 qa-log.md 升级 Lead，走 spec 变更流程。**绝不自己改测试改绿。**
 
 ## 你可以写的文件
 

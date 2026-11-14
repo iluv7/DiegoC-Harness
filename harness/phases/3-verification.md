@@ -12,15 +12,17 @@ Spawn Code Reviewer，提供：角色定义 + spec.md + 技术方案 + 所有生
 
 如有严重问题 → 分配给责任 Agent 修正。修完后重新跑 CI。
 
-## 子阶段 3.2：QA 测试
+## 子阶段 3.2：QA 测试（补全 + 回归）
 
 Spawn QA Runner，提供：角色定义 + test-matrix.md + spec.md + 技术方案 + 所有代码 + config.md。
 
-任务：写测试代码（匹配 test_file_suffix）、跑测试、出报告。
+任务：P0 验收测试已在阶段 2 由 QA Designer 实现并通过关卡 #2。QA Runner 补全 P1（P2 按要求）测试、跑全量回归、出报告。
 
 产出：测试代码文件 + `reviews/qa.md`（含测试执行结果、失败分析、覆盖率报告）。
 
-如有测试失败 → 确定归属（测试 bug 还是代码 bug）→ 分配给责任 Agent 修正。最多 2 次。
+如有测试失败 → 确定归属（回归 bug / 新测试 bug / spec 矛盾）→ 分配给责任 Agent 修正。最多 2 次。
+
+**P0 测试不可静默修改**：P0 测试需要修改时，必须同步更新 test-matrix.md 并经 Lead 批准（走 spec 变更流程）。
 
 ## 子阶段 3.3：测试代码审查
 

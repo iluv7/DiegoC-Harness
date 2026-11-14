@@ -43,6 +43,10 @@
 - 在各阶段之间检查 `docs/harness/{功能名}/qa-log.md`
 - Agent 有问题时解决（自己回答、或问人类用户）
 - Agent 有冲突时做出裁决
+- **红灯裁决（TDD）**：阶段 2 出现「P0 测试与 spec 矛盾」时，裁决归属：
+  - 测试错 → QA Designer 修测试，必须同步更新 test-matrix.md 留痕
+  - spec 错/含糊 → 走 spec 变更流程（更新 spec → test-matrix → 测试），把受影响步骤从 ✅ 改回 ❌ 重跑
+  - **任何 P0 测试修改必须经你批准**
 
 ### 5. 进度追踪
 - 维护 `docs/harness/{功能名}/PROGRESS.md` 作为唯一真相来源

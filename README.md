@@ -162,15 +162,15 @@ Lead **并行 spawn** 三个 Agent：
 
 - **API Implementer** → 写 API handler / 路由代码（8 个 API 文件）
 - **Biz Implementer** → 写 service 层 + DAO 层代码（model/dao/service + go.mod，编译通过）
-- **QA Designer** → 设计测试矩阵（111 条用例，38.7% 负向）
+- **QA Designer** → 设计测试矩阵（111 条用例，38.7% 负向）+ 实现 P0 验收测试（红灯先行）
 
 ![阶段 2：3 Agent 并行编码](screenshots/8.png)
 
-**关卡 #2**：Lead spawn CI Runner 跑编译 + lint，完成后 spawn Gatekeeper 验证 CI 报告完整性和质量，产出门禁报告 `reviews/gate-2-report.md`。All PASS，直接通过。
+**关卡 #2**：Lead spawn CI Runner 跑编译 + lint + 测试（**P0 全绿才通过**），完成后 spawn Gatekeeper 验证 CI 报告完整性和质量，产出门禁报告 `reviews/gate-2-report.md`。All PASS，直接通过。
 
-![关卡 #2：CI Runner 编译 + lint 全通过](screenshots/9.png)
+![关卡 #2：CI Runner 编译 + lint + P0 测试全通过](screenshots/9.png)
 
-**编译 + lint 全部 0 错误。** 进入阶段 3。
+**编译 + lint 0 错误、P0 测试全绿。** 进入阶段 3。
 
 ---
 
@@ -178,7 +178,7 @@ Lead **并行 spawn** 三个 Agent：
 
 **3.1 代码审查**：Lead spawn Code Reviewer，对全部改动做静态审查。命中 **1C + 4I + 5M**——C-1（严重）必须修，I-1/I-2/I-4（重要）应在此轮修。
 
-**3.2 测试执行**：Lead spawn QA Runner，按测试矩阵写测试代码并运行，**72/72 PASS，coverage 33.6%**。
+**3.2 测试执行**：Lead spawn QA Runner，补全 P1/P2 测试并跑全量回归（P0 已在阶段 2 实现），**72/72 PASS，coverage 33.6%**。
 
 **3.3 测试代码审查**：Lead spawn Code Reviewer（测试模式），审查测试代码质量（3C + 10I + 5M，3C 均为非阻塞）。
 
@@ -259,10 +259,10 @@ Lead **并行 spawn** 三个 Agent：
 | **Planner** | 读 PRD → 结构化需求 + API 契约 | ✗ |
 | **API Implementer** | API/handler/路由 + 请求校验 | ✓ |
 | **Biz Implementer** | 业务逻辑 + 数据访问 | ✓ |
-| **QA Designer** | 设计测试矩阵 | ✗ |
-| **CI Runner** | 跑编译 + lint | ✗ |
+| **QA Designer** | 设计测试矩阵 + 实现 P0 验收测试（红灯） | ✗ |
+| **CI Runner** | 跑编译 + lint + 测试 | ✗ |
 | **Code Reviewer** | 静态审查 + 测试审查 | ✗ |
-| **QA Runner** | 写测试 + 跑测试 + 出报告 | ✓ |
+| **QA Runner** | 补 P1/P2 测试 + 全量回归 + 出报告 | ✓ |
 
 ---
 
